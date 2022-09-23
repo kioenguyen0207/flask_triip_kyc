@@ -39,14 +39,30 @@ def importData(user_id, username, address, phone, image_path, detected_objects, 
     print(response)
     return response
 
-def readData():
+def readPendingReq():
     response = kyc_requests_table.scan(
         FilterExpression = Attr("kycStatus").eq('pending')
     )
     return response['Items']
 
+def readAllReq():
+    response = kyc_requests_table.scan()
+    return response['Items']
+
+def readRejectedReq():
+    response = kyc_requests_table.scan(
+        FilterExpression = Attr("kycStatus").eq('rejected')
+    )
+    return response['Items']
+
+def readApprovedReq():
+    response = kyc_requests_table.scan(
+        FilterExpression = Attr("kycStatus").eq('approved')
+    )
+    return response['Items']
+
 if __name__ == '__main__':
     # importData(1, 'Nguyen Dinh Quy', 'Can Tho', 1)
-    for item in readData():
+    for item in readAllReq():
         print('------')
         print(item)

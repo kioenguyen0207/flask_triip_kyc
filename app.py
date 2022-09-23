@@ -1,3 +1,4 @@
+import json
 from flask import Flask, jsonify
 from flask_restful import Api, Resource, reqparse
 import werkzeug
@@ -6,11 +7,13 @@ import numpy as np
 from triip_detect import detect
 import os
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 from s3_controller import s3_upload
-from db_controller import importData, readData
+from db_controller import importData, readPendingReq, readAllReq, readRejectedReq, readApprovedReq
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app)
 
 load_dotenv()
@@ -25,8 +28,6 @@ class Home(Resource):
                     'error details': ex}, 500
 
 class send_kyc_request(Resource):
-    def get(self):
-        return jsonify(readData())
     def post(self):
         try:
             parser = reqparse.RequestParser(bundle_errors=True)
@@ -56,10 +57,29 @@ class send_kyc_request(Resource):
                 'description': str(ex)
                 }, 500
 
+class getAllRequest(Resource):
+    def get(self):
+        return jsonify(readAllReq())
+
+class getRejectedRequest(Resource):
+    def get(self):
+        return jsonify(readRejectedReq())
+
+class getPendingRequest(Resource):
+    def get(self):
+        return jsonify(readPendingReq())
+
+class getApprovedRequest(Resource):
+    def get(self):
+        return jsonify(readApprovedReq())
 
 #endpoint(s)
 api.add_resource(Home, "/")
 api.add_resource(send_kyc_request, "/kyc")
+api.add_resource(getAllRequest, "/get/all")
+api.add_resource(getRejectedRequest, "/get/rejected")
+api.add_resource(getPendingRequest, "/get/pending")
+api.add_resource(getApprovedRequest, "/get/approved")
 
 if __name__=='__main__':
     app.run(host="0.0.0.0", port=5050)
